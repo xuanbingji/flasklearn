@@ -1,0 +1,24 @@
+name: flask
+channels:
+- https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free
+- https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+- https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+- https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+- defaults
+dependencies:
+- certifi=2016.2.28=py36_0
+- click=6.7=py36_0
+- itsdangerous=0.24=py36_0
+- markupsafe=1.0=py36_0
+- pip=9.0.1=py36_1
+- setuptools=36.4.0=py36_1
+- vc=14=0
+- vs2015_runtime=14.0.25420=0
+- wheel=0.29.0=py36_0
+- wincertstore=0.2=py36_0
+- flask=1.0.2=py36_1
+- jinja2=2.10=py36h292fed1_0
+- python=3.6.5=h0c2934d_0
+- werkzeug=0.14.1=py36_0
+prefix: E:\ProgramData\Anaconda3\envs\flask
+
