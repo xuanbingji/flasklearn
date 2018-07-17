@@ -8,29 +8,36 @@ from wtforms.validators import DataRequired
 from flask_script import Manager, Shell
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate, MigrateCommand
+from flask_mail import Mail,Message
 import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 app = Flask(__name__)
-manager = Manager(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = \
-    'sqlite:///' + os.path.join(basedir,'data.sqlite')
+app.config['SECRET_KEY'] = 'hard to guess string'
+app.config['SQLALCHEMY_DATABASE_URI'] =\
+    'sqlite:///' + os.path.join(basedir, 'data.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-
-moment=Moment(app)
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[Flasky]'
+app.config['FLASKY_MAIL_SENDER'] = 'Flasky Admin <flasky@example.com>'
+app.config['FLASKY_ADMIN'] = os.environ.get('FLASKY_ADMIN')
 
 bootstrap = Bootstrap(app)
-app.config['SECRET_KEY'] = 'hard to guess string'
+moment = Moment(app)
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+mail = Mail(app)
 
-migrate =Migrate(app,db)
-#manager.add_command('db', MigrateCommand)
 
 class NameForm(FlaskForm):
     name = StringField('what is your name?', validators= [DataRequired()])
     submit = SubmitField('Submit')
+
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -41,6 +48,7 @@ class Role(db.Model):
     def __repr__(self):
         return '<Role {}>'.format(self.name)
 
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key = True)
@@ -49,6 +57,22 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+
+def send_email(to, subject, template, **kwargs):
+    msg = Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX'] + ' ' + subject,
+                  sender=app.config['FLASKY_MAIL_SENDER'], recipients=[to])
+    msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return thr
+
 
 @app.errorhandler(404)
 def page_not_found(e):
