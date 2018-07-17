@@ -5,8 +5,9 @@ from datetime import datetime
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-from flask_script import Manager
+from flask_script import Manager, Shell
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate, MigrateCommand
 import os
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -23,6 +24,9 @@ moment=Moment(app)
 
 bootstrap = Bootstrap(app)
 app.config['SECRET_KEY'] = 'hard to guess string'
+
+migrate =Migrate(app,db)
+#manager.add_command('db', MigrateCommand)
 
 class NameForm(FlaskForm):
     name = StringField('what is your name?', validators= [DataRequired()])
@@ -77,6 +81,9 @@ def index():
 def user(name):
     return render_template('user.html', name=name)
 
+@app.shell_context_processor
+def make_shell_context():
+    return dict(app=app, db=db, User=User, Role=Role)
 
 if __name__ == '__main__':
     manager.run()
